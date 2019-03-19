@@ -10,10 +10,8 @@ import java.nio.file.StandardOpenOption;
 public class Futil{
     public static void processDir(String dirName, String resultFileName) {
 
-        String absoluteFilePath = System.getProperty("user.home") + System.getProperty("file.separator") + resultFileName;
-        SaveTextFilesContent saveFiles = new SaveTextFilesContent(absoluteFilePath);
+        SaveTextFilesContent saveFiles = new SaveTextFilesContent(resultFileName);
         try {
-            FileChannel.open(Paths.get(absoluteFilePath), StandardOpenOption.WRITE).truncate(0).close();
             Files.walkFileTree(Paths.get(dirName), saveFiles);
         } catch (IOException e) {
             e.printStackTrace();
