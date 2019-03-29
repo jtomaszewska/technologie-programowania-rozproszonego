@@ -7,6 +7,8 @@ package zad1;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
@@ -18,6 +20,8 @@ public class Service {
     private static final String weatherUrl = "https://api.openweathermap.org/data/2.5/weather?q=%s&APPID=%s";
     private static final String weatherAppId = "76d057a60d6abd56ed36974936616945";
     private static final String exchangeRateECBUrl = "https://api.exchangeratesapi.io/latest";
+    private static final String nbpRatePartA = "http://www.nbp.pl/kursy/xml/b012z190320.xml";
+    private static final String nbpRatePartB = "http://www.nbp.pl/kursy/xml/a058z190322.xml";
     private String country;
 
     public Service(String country) {
@@ -52,15 +56,12 @@ public class Service {
     }
 
     private String httpGet(URL url) throws IOException {
-//        System.out.println(url);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");
         con.setRequestProperty("Content-Type", "application/json");
         con.setDoOutput(true);
 
         int status = con.getResponseCode();
-//        System.out.println(status);
-
         if (status != 200) return "";
         BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
         String inputLine;
@@ -107,7 +108,34 @@ public class Service {
 
     /*kurs złotego wobec waluty kraju*/
     public Double getNBPRate() {
-        return null;
+
+        String countryCurr = getCurrency(country);
+        if (countryCurr.equals("PLN")) {
+            return Double.valueOf(1);
+        }
+        String nbpRatesAllData = "";
+        try {
+            nbpRatesAllData = httpGet(new URL(nbpRatePartA));
+            nbpRatesAllData += httpGet(new URL(nbpRatePartB));
+        } catch (IOException e) {
+            System.out.println("Strona NBP nieistnieje, bądź została zmieniona");
+        }
+
+        Pattern pattern = Pattern.compile("([0-9]*)</przelicznik>\\s*<kod_waluty>" + countryCurr + "</kod_waluty>\\s*<kurs_sredni>([0-9]*,[0-9]{4})");
+        Matcher matcher = pattern.matcher(nbpRatesAllData);
+        String nbpRate = "0";
+        String scaler = "1";
+        if (matcher.find()) {
+            scaler = matcher.group(1);
+            nbpRate = matcher.group(2);
+        }
+        nbpRate = nbpRate.replaceAll(",", ".");
+        Double rate = Double.parseDouble(nbpRate);
+        int scale = Integer.parseInt(scaler);
+        Double val = BigDecimal.valueOf(rate / scale)
+                .setScale(4, RoundingMode.HALF_UP)
+                .doubleValue();
+        return val;
     }
 
     /*lista walut(kody) w european central bank api*/

@@ -1,7 +1,5 @@
 /**
- *
- *  @author Tomaszewska Justyna S15313
- *
+ * @author Tomaszewska Justyna S15313
  */
 
 package zad1;
@@ -12,18 +10,21 @@ import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 
 public class Main extends Application {
 
     public static void main(String[] args) {
-    Service s = new Service("Poland");
-    String weatherJson = s.getWeather("Warsaw");
-    Double rate1 = s.getRateFor("USD");
-    Double rate2 = s.getNBPRate();
-    // ...
-    // część uruchamiająca GUI
+        Service s = new Service("Poland");
+        String weatherJson = s.getWeather("Warsaw");
+        Double rate1 = s.getRateFor("USD");
+        Double rate2 = s.getNBPRate();
+        // ...
+        // część uruchamiająca GUI
         launch();
     }
 
@@ -78,17 +79,25 @@ public class Main extends Application {
         TextField currencyPLNVal = new TextField();
         GridPane.setConstraints(currencyPLNVal, 2, 6);
 
+        WebView webView = new WebView();
+        final WebEngine webEngine = webView.getEngine();
+
+        VBox root = new VBox();
+        root.getChildren().add(webView);
+        GridPane.setConstraints(root, 2, 7);
         Button checkButton = new Button("Sprawdź");
         GridPane.setConstraints(checkButton, 2, 2);
         checkButton.setOnAction(event -> {
             weatherTextArea.setText(new Service(countryInput.getText()).getWeather(cityInput.getText()));
+            currencyPLNVal.setText(new Service(countryInput.getText()).getNBPRate().toString());
+            webEngine.load("https://en.wikipedia.org/wiki/" + cityInput.getText());
         });
 
         inputsGrid.getChildren().addAll(cityLabel, cityInput, countryLabel, countryInput, checkButton,
                 availableCurrChoiceBox,
                 weatherLabel, weatherTextArea,
                 currencyPLNLabel, currencyPLNVal,
-                currencyOthersVal, currencyOthersNVal);
+                currencyOthersVal, currencyOthersNVal, root);
 
         Scene scene = new Scene(inputsGrid, 1000, 700);
         primaryStage.setScene(scene);
