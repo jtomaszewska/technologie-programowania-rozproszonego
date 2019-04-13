@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="TPO3_TJ_S15313:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/TPO3_TJ_S15313_jar</output-path>
+    <root id="archive" name="TPO3_TJ_S15313.jar">
+      <element id="module-output" name="TPO3_TJ_S15313" />
+    </root>
+  </artifact>
+</component>
